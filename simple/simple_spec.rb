@@ -47,7 +47,7 @@ describe 'Simple small-step semantics' do
     ).to_stdout
   end
 
-  it '"left than" expression' do
+  it '"less than" expression' do
     expression = LessThan.new(
       Number.new(5),
       Add.new(Number.new(2), Number.new(2))
@@ -69,6 +69,44 @@ describe 'Simple small-step semantics' do
         "3 + y, {:x=><<3>>, :y=><<4>>}\n" +
         "3 + 4, {:x=><<3>>, :y=><<4>>}\n" +
         "7, {:x=><<3>>, :y=><<4>>}\n"
+    ).to_stdout
+  end
+
+  it 'assignment statement' do
+    machine = Machine.new(
+      Assign.new(:x, Add.new(Variable.new(:x), Number.new(1))),
+      {x: Number.new(2)}
+    )
+    expect{ machine.run }.to output(
+      "x = x + 1, {:x=><<2>>}\n" +
+      "x = 2 + 1, {:x=><<2>>}\n" +
+      "x = 3, {:x=><<2>>}\n" +
+      "do-nothing, {:x=><<3>>}\n"
+    ).to_stdout
+  end
+
+  it 'if statement' do
+    machine = Machine.new(
+      If.new(Variable.new(:x),
+        Assign.new(:y, Number.new(1)),
+        Assign.new(:y, Number.new(2))
+    ), {x: Boolean.new(true)})
+    expect{ machine.run }.to output(
+      "if (x) { y = 1 } else { y = 2 }, {:x=><<true>>}\n" +
+      "if (true) { y = 1 } else { y = 2 }, {:x=><<true>>}\n" +
+      "y = 1, {:x=><<true>>}\n" +
+      "do-nothing, {:x=><<true>>, :y=><<1>>}\n"
+    ).to_stdout
+
+    machine = Machine.new(
+      If.new(Variable.new(:x),
+        Assign.new(:y, Number.new(1)),
+        DoNothing.new
+    ), {x: Boolean.new(false)})
+    expect{ machine.run }.to output(
+      "if (x) { y = 1 } else { do-nothing }, {:x=><<false>>}\n" +
+      "if (false) { y = 1 } else { do-nothing }, {:x=><<false>>}\n" +
+      "do-nothing, {:x=><<false>>}\n"
     ).to_stdout
   end
 end

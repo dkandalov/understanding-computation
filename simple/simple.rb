@@ -20,6 +20,36 @@ class Machine < Struct.new(:statement, :environment)
   end
 end
 
+class If < Struct.new(:condition, :consequence, :alternative)
+  def reduce(environment)
+    if condition.reducible?
+      self.condition, environment = condition.reduce(environment)
+      [If.new(condition, consequence, alternative), environment]
+    else
+      case condition
+        when Boolean.new(true)
+          [consequence, environment]
+        when Boolean.new(false)
+          [alternative, environment]
+        else
+          raise("Unsupported condition: #{condition}")
+      end
+    end
+  end
+
+  def reducible?
+    true
+  end
+
+  def to_s
+    "if (#{condition}) { #{consequence} } else { #{alternative} }"
+  end
+
+  def inspect
+    "<<#{self}>>"
+  end
+end
+
 class Assign < Struct.new(:name, :expression)
   def reduce(environment)
     if expression.reducible?
