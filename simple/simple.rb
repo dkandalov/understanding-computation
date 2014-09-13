@@ -20,6 +20,30 @@ class Machine < Struct.new(:statement, :environment)
   end
 end
 
+class Sequence < Struct.new(:first, :second)
+  def reduce(environment)
+    case first
+      when DoNothing.new
+        [second, environment]
+      else
+        self.first, environment = first.reduce(environment)
+        [Sequence.new(first, second), environment]
+    end
+  end
+
+  def reducible?
+    true
+  end
+
+  def to_s
+    "#{first}; #{second}"
+  end
+
+  def inspect
+    "<<#{self}>>"
+  end
+end
+
 class If < Struct.new(:condition, :consequence, :alternative)
   def reduce(environment)
     if condition.reducible?
