@@ -1,7 +1,7 @@
 require 'rspec'
 require File.expand_path('simple.rb')
 
-describe 'Simple language' do
+describe 'Simple small-step semantics' do
   it 'instantiate syntax tree' do
     expression = Add.new(
       Multiply.new(Number.new(1), Number.new(2)),
@@ -11,7 +11,7 @@ describe 'Simple language' do
     expect(Number.new(5).inspect).to eq('<<5>>')
   end
 
-  it 'reduce expressions in small steps' do
+  it 'reduce expressions' do
     empty_environment = {}
     expression = Add.new(
       Multiply.new(Number.new(1), Number.new(2)),
@@ -20,15 +20,15 @@ describe 'Simple language' do
     expect(expression.inspect).to eq('<<1 * 2 + 3 * 4>>')
 
     expect(expression.reducible?).to be(true)
-    expression = expression.reduce(empty_environment)
+    expression = expression.reduce(empty_environment)[0]
     expect(expression.inspect).to eq('<<2 + 3 * 4>>')
 
     expect(expression.reducible?).to be(true)
-    expression = expression.reduce(empty_environment)
+    expression = expression.reduce(empty_environment)[0]
     expect(expression.inspect).to eq('<<2 + 12>>')
 
     expect(expression.reducible?).to be(true)
-    expression = expression.reduce(empty_environment)
+    expression = expression.reduce(empty_environment)[0]
     expect(expression.inspect).to eq('<<14>>')
 
     expect(expression.reducible?).to be(false)
@@ -39,7 +39,7 @@ describe 'Simple language' do
         Multiply.new(Number.new(1), Number.new(2)),
         Multiply.new(Number.new(3), Number.new(4))
     )
-    expect{ Machine.new(expression).run }.to output(
+    expect{ Machine.new(expression, {}).run }.to output(
         "1 * 2 + 3 * 4\n" +
         "2 + 3 * 4\n" +
         "2 + 12\n" +
@@ -52,7 +52,7 @@ describe 'Simple language' do
       Number.new(5),
       Add.new(Number.new(2), Number.new(2))
     )
-    expect{ Machine.new(expression).run }.to output(
+    expect{ Machine.new(expression, {}).run }.to output(
         "5 < 2 + 2\n" +
         "5 < 4\n" +
         "false\n"
@@ -65,10 +65,10 @@ describe 'Simple language' do
       { x: Number.new(3), y: Number.new(4) }
     )
     expect{ machine.run }.to output(
-        "x + y\n" +
-        "3 + y\n" +
-        "3 + 4\n" +
-        "7\n"
+        "x + y, {:x=><<3>>, :y=><<4>>}\n" +
+        "3 + y, {:x=><<3>>, :y=><<4>>}\n" +
+        "3 + 4, {:x=><<3>>, :y=><<4>>}\n" +
+        "7, {:x=><<3>>, :y=><<4>>}\n"
     ).to_stdout
   end
 end
