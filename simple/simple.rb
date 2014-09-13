@@ -12,6 +12,44 @@ class Machine < Struct.new(:expression)
   end
 end
 
+class Boolean < Struct.new(:value)
+  def reducible?
+    false
+  end
+
+  def to_s
+    "#{value}"
+  end
+
+  def inspect
+    "<<#{self}>>"
+  end
+end
+
+class LessThan < Struct.new(:left, :right)
+  def reduce
+    if left.reducible?
+      LessThan.new(left.reduce, right)
+    elsif right.reducible?
+      LessThan.new(left, right.reduce)
+    else
+      Boolean.new(left.value < right.value)
+    end
+  end
+
+  def reducible?
+    true
+  end
+
+  def to_s
+    "#{left} < #{right}"
+  end
+
+  def inspect
+    "<<#{self}>>"
+  end
+end
+
 class Number < Struct.new(:value)
   def reducible?
     false

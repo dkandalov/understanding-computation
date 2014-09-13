@@ -33,7 +33,7 @@ describe 'Simple language' do
     expect(expression.reducible?).to be(false)
   end
 
-  it 'machine' do
+  it 'using Machine to evaluate expressions' do
     expression = Add.new(
         Multiply.new(Number.new(1), Number.new(2)),
         Multiply.new(Number.new(3), Number.new(4))
@@ -43,6 +43,18 @@ describe 'Simple language' do
         "2 + 3 * 4\n" +
         "2 + 12\n" +
         "14\n"
+    ).to_stdout
+  end
+
+  it '"left than" expression' do
+    expression = LessThan.new(
+      Number.new(5),
+      Add.new(Number.new(2), Number.new(2))
+    )
+    expect{ Machine.new(expression).run }.to output(
+        "5 < 2 + 2\n" +
+        "5 < 4\n" +
+        "false\n"
     ).to_stdout
   end
 end
