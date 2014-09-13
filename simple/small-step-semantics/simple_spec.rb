@@ -132,7 +132,7 @@ describe 'Simple small-step semantics' do
       While.new(
         LessThan.new(Variable.new(:x), Number.new(5)),
         Assign.new(:x, Multiply.new(Variable.new(:x), Number.new(3)))
-    ), { x: Number.new(1)} )
+    ), { x: Number.new(1) })
     expect(machine.run).to eq({x: Number.new(9)})
   end
 end
