@@ -1,5 +1,5 @@
 require 'rspec'
-require File.expand_path('simple_small_step_semantics.rb')
+require File.expand_path('simple.rb')
 
 describe 'Simple small-step semantics' do
   it 'instantiate syntax tree' do
