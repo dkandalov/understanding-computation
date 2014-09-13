@@ -9,6 +9,7 @@ class Machine < Struct.new(:statement, :environment)
       step
     end
     print_state
+    environment
   end
 
   def print_state
@@ -20,14 +21,32 @@ class Machine < Struct.new(:statement, :environment)
   end
 end
 
+class While < Struct.new(:condition, :body)
+  def reduce(environment)
+    [If.new(condition, Sequence.new(body, self), DoNothing.new), environment]
+  end
+
+  def reducible?
+    true
+  end
+
+  def to_s
+    "while (#{condition}) { #{body} }"
+  end
+
+  def inspect
+    "<<#{self}>>"
+  end
+end
+
 class Sequence < Struct.new(:first, :second)
   def reduce(environment)
     case first
       when DoNothing.new
         [second, environment]
       else
-        self.first, environment = first.reduce(environment)
-        [Sequence.new(first, second), environment]
+        reduced_first, environment = first.reduce(environment)
+        [Sequence.new(reduced_first, second), environment]
     end
   end
 
@@ -47,8 +66,8 @@ end
 class If < Struct.new(:condition, :consequence, :alternative)
   def reduce(environment)
     if condition.reducible?
-      self.condition, environment = condition.reduce(environment)
-      [If.new(condition, consequence, alternative), environment]
+      reduced_condition, environment = condition.reduce(environment)
+      [If.new(reduced_condition, consequence, alternative), environment]
     else
       case condition
         when Boolean.new(true)
@@ -77,8 +96,8 @@ end
 class Assign < Struct.new(:name, :expression)
   def reduce(environment)
     if expression.reducible?
-      self.expression, environment = expression.reduce(environment)
-      [Assign.new(name, expression), environment]
+      reduced_expression, environment = expression.reduce(environment)
+      [Assign.new(name, reduced_expression), environment]
     else
       [DoNothing.new, environment.merge({name => expression})]
     end
@@ -150,11 +169,11 @@ end
 class LessThan < Struct.new(:left, :right)
   def reduce(environment)
     if left.reducible?
-      self.left, environment = left.reduce(environment)
-      [LessThan.new(left, right), environment]
+      reduced_left, environment = left.reduce(environment)
+      [LessThan.new(reduced_left, right), environment]
     elsif right.reducible?
-      self.right, environment = right.reduce(environment)
-      [LessThan.new(left, right), environment]
+      reduced_right, environment = right.reduce(environment)
+      [LessThan.new(left, reduced_right), environment]
     else
       [Boolean.new(left.value < right.value), environment]
     end
@@ -190,11 +209,11 @@ end
 class Add < Struct.new(:left, :right)
   def reduce(environment)
     if left.reducible?
-      self.left, environment = left.reduce(environment)
-      [Add.new(left, right), environment]
+      reduced_left, environment = left.reduce(environment)
+      [Add.new(reduced_left, right), environment]
     elsif right.reducible?
-      self.right, environment = right.reduce(environment)
-      [Add.new(left, right), environment]
+      reduced_right, environment = right.reduce(environment)
+      [Add.new(left, reduced_right), environment]
     else
       [Number.new(left.value + right.value), environment]
     end
@@ -216,11 +235,11 @@ end
 class Multiply < Struct.new(:left, :right)
   def reduce(environment)
     if left.reducible?
-      self.left, environment = left.reduce(environment)
-      [Multiply.new(left, right), environment]
+      reduced_left, environment = left.reduce(environment)
+      [Multiply.new(reduced_left, right), environment]
     elsif right.reducible?
-      self.right, environment = right.reduce(environment)
-      [Multiply.new(left, right), environment]
+      reduced_right, environment = right.reduce(environment)
+      [Multiply.new(left, reduced_right), environment]
     else
       [Number.new(left.value * right.value), environment]
     end

@@ -1,5 +1,5 @@
 require 'rspec'
-require File.expand_path('simple.rb')
+require File.expand_path('simple_small_step_semantics.rb')
 
 describe 'Simple small-step semantics' do
   it 'instantiate syntax tree' do
@@ -125,5 +125,14 @@ describe 'Simple small-step semantics' do
       "y = 5, {:x=><<2>>}\n" +
       "do-nothing, {:x=><<2>>, :y=><<5>>}\n"
     ).to_stdout
+  end
+
+  it 'while statement' do
+    machine = Machine.new(
+      While.new(
+        LessThan.new(Variable.new(:x), Number.new(5)),
+        Assign.new(:x, Multiply.new(Variable.new(:x), Number.new(3)))
+    ), { x: Number.new(1)} )
+    expect(machine.run).to eq({x: Number.new(9)})
   end
 end
