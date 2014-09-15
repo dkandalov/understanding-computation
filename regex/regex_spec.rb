@@ -18,20 +18,20 @@ describe 'Regex language' do
     expect(pattern.inspect).to eq('/(abc)*/')
   end
 
-  it 'has NFA for empty pattern' do
+  it 'empty pattern' do
     pattern = Empty.new
     expect(pattern.matches?('')).to be(true)
     expect(pattern.matches?('a')).to be(false)
   end
 
-  it 'has NFA for literal pattern' do
+  it 'literal pattern' do
     pattern = Literal.new('a')
     expect(pattern.matches?('')).to be(false)
     expect(pattern.matches?('a')).to be(true)
     expect(pattern.matches?('b')).to be(false)
   end
 
-  it 'has NFA for concatenate pattern' do
+  it 'concatenate pattern' do
     pattern = Concatenate.new(Literal.new('a'), Literal.new('b'))
     expect(pattern.matches?('')).to be(false)
     expect(pattern.matches?('a')).to be(false)
@@ -47,5 +47,37 @@ describe 'Regex language' do
     expect(pattern.matches?('a')).to be(false)
     expect(pattern.matches?('ab')).to be(false)
     expect(pattern.matches?('abc')).to be(true)
+  end
+
+  it 'choose patter' do
+    pattern = Choose.new(Literal.new('a'), Literal.new('b'))
+    expect(pattern.matches?('')).to be(false)
+    expect(pattern.matches?('a')).to be(true)
+    expect(pattern.matches?('b')).to be(true)
+    expect(pattern.matches?('c')).to be(false)
+    expect(pattern.matches?('ab')).to be(false)
+  end
+
+  it 'repeat pattern' do
+    pattern = Repeat.new(Literal.new('a'))
+    expect(pattern.matches?('')).to be(false)
+    expect(pattern.matches?('a')).to be(true)
+    expect(pattern.matches?('aaa')).to be(true)
+    expect(pattern.matches?('b')).to be(false)
+  end
+
+  it 'combined patterns' do
+    pattern = Repeat.new(
+      Concatenate.new(
+        Literal.new('a'),
+        Choose.new(Empty.new, Literal.new('b'))
+    ))
+    expect(pattern.inspect).to eq('/(a(|b))*/')
+    expect(pattern.matches?('')).to be(false)
+    expect(pattern.matches?('a')).to be(true)
+    expect(pattern.matches?('ab')).to be(true)
+    expect(pattern.matches?('aba')).to be(true)
+    expect(pattern.matches?('abaab')).to be(true)
+    expect(pattern.matches?('abba')).to be(false)
   end
 end

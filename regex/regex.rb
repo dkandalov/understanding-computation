@@ -21,6 +21,17 @@ end
 class Repeat < Struct.new(:pattern)
   include Pattern
 
+  def to_nfa_design
+    nfa = pattern.to_nfa_design
+
+    extra_rules = nfa.accept_states.map do |it|
+      FARule.new(it, nil, nfa.start_state)
+    end
+    rulebook = NFARulebook.new(nfa.rulebook.rules + extra_rules)
+
+    NFADesign.new(nfa.start_state, nfa.accept_states, rulebook)
+  end
+
   def to_s
     pattern.bracket(precedence) + '*'
   end
@@ -32,6 +43,22 @@ end
 
 class Choose < Struct.new(:first, :second)
   include Pattern
+
+  def to_nfa_design
+    first_nfa_design = first.to_nfa_design
+    second_nfa_design = second.to_nfa_design
+
+    start_state = Object.new
+    accept_states = first_nfa_design.accept_states + second_nfa_design.accept_states
+
+    rules = first_nfa_design.rulebook.rules + second_nfa_design.rulebook.rules
+    extra_rules = [first_nfa_design, second_nfa_design].map do |nfa_design|
+      FARule.new(start_state, nil, nfa_design.start_state)
+    end
+    rulebook = NFARulebook.new(rules + extra_rules)
+
+    NFADesign.new(start_state, accept_states, rulebook)
+  end
 
   def to_s
     [first, second].map { |it| it.bracket(precedence) }.join('|')
