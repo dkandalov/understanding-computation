@@ -45,6 +45,21 @@ end
 class Concatenate < Struct.new(:first, :second)
   include Pattern
 
+  def to_nfa_design
+    first_nfa_design = first.to_nfa_design
+    second_nfa_design = second.to_nfa_design
+
+    rules = first_nfa_design.rulebook.rules + second_nfa_design.rulebook.rules
+    extra_rules = first_nfa_design.accept_states.map{ |state|
+      FARule.new(state, nil, second_nfa_design.start_state)
+    }
+    rulebook = NFARulebook.new(rules + extra_rules)
+
+    start_state = first_nfa_design.start_state
+    accept_states = second_nfa_design.accept_states
+    NFADesign.new(start_state, accept_states, rulebook)
+  end
+
   def to_s
     [first, second].map { |it| it.bracket(precedence) }.join
   end
