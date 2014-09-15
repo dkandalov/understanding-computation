@@ -30,7 +30,7 @@ describe 'NFA' do
     expect(nfa_design.accepts?('bbabb')).to be(false)
   end
 
-  it 'should follow rules with free moves' do
+  it 'should follow rules with free moves (see also nfr_free_moves.png)' do
     rulebook = NFARulebook.new([
       FARule.new(1, nil, 2), FARule.new(1, nil, 4),
       FARule.new(2, 'a', 3), FARule.new(3, 'a', 2),
