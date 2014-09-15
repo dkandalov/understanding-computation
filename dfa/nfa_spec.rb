@@ -2,7 +2,7 @@ require 'rspec'
 require File.expand_path('nfa.rb')
 
 describe 'NFA' do
-  it 'should follow rules' do
+  it 'should follow rules (see also nfa.png)' do
     rulebook = NFARulebook.new([
       FARule.new(1, 'a', 1), FARule.new(1, 'b', 1), FARule.new(1, 'b', 2),
       FARule.new(2, 'a', 3), FARule.new(2, 'b', 3),

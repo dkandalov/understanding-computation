@@ -2,7 +2,7 @@ require 'rspec'
 require File.expand_path('dfa.rb')
 
 describe 'DFA' do
-  it 'should follow rules in rulebook' do
+  it 'should follow rules in rulebook (see also dfa.png)' do
     rulebook = DFARulebook.new([
       FARule.new(1, 'a', 2), FARule.new(1, 'b', 1),
       FARule.new(2, 'a', 2), FARule.new(2, 'b', 3),
