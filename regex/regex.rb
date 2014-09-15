@@ -1,6 +1,10 @@
 require_relative '../dfa/nfa'
 
 module Pattern
+  def matches?(string)
+    to_nfa_design.accepts?(string)
+  end
+
   def bracket(outer_precedence)
     if precedence < outer_precedence
       '(' + to_s + ')'
@@ -53,6 +57,15 @@ end
 class Literal < Struct.new(:character)
   include Pattern
 
+  def to_nfa_design
+    start_state = Object.new
+    accept_state = Object.new
+    rulebook = NFARulebook.new([
+      FARule.new(start_state, character, accept_state)
+    ])
+    NFADesign.new(start_state, [accept_state], rulebook)
+  end
+
   def to_s
     character
   end
@@ -64,6 +77,13 @@ end
 
 class Empty
   include Pattern
+
+  def to_nfa_design
+    start_state = Object.new
+    accept_states = [start_state]
+    rulebook = NFARulebook.new([])
+    NFADesign.new(start_state, accept_states, rulebook)
+  end
 
   def to_s
     ''

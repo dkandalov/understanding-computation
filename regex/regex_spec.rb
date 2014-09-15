@@ -17,4 +17,17 @@ describe 'Regex language' do
     )
     expect(regex.inspect).to eq('/(abc)*/')
   end
+
+  it 'has NFA for empty pattern' do
+    empty = Empty.new
+    expect(empty.matches?('')).to be(true)
+    expect(empty.matches?('a')).to be(false)
+  end
+
+  it 'has NFA for literal pattern' do
+    literal = Literal.new('a')
+    expect(literal.matches?('')).to be(false)
+    expect(literal.matches?('a')).to be(true)
+    expect(literal.matches?('b')).to be(false)
+  end
 end
