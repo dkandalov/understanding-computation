@@ -1,8 +1,8 @@
 require 'rspec'
-require File.expand_path('regex.rb')
+require_relative 'regex.rb'
 
 describe 'Regex language' do
-  it 'AST which can be converted into string' do
+  it 'has AST which can be converted into string' do
     regex = Repeat.new(
       Choose.new(
         Concatenate.new(Literal.new('a'), Literal.new('b')),

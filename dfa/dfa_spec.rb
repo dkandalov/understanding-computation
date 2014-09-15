@@ -1,5 +1,5 @@
 require 'rspec'
-require File.expand_path('dfa.rb')
+require_relative 'dfa.rb'
 
 describe 'DFA' do
   it 'should follow rules in rulebook (see also dfa.png)' do

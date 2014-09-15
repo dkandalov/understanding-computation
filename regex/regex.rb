@@ -1,3 +1,5 @@
+require_relative '../dfa/nfa'
+
 module Pattern
   def bracket(outer_precedence)
     if precedence < outer_precedence

@@ -1,5 +1,5 @@
 require 'rspec'
-require File.expand_path('simple.rb')
+require_relative 'simple.rb'
 
 describe 'Denotational semantics' do
   it 'number and boolean expressions' do

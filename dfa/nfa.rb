@@ -1,5 +1,5 @@
 require 'set'
-require File.expand_path('dfa.rb')
+require_relative './dfa.rb'
 
 class NFARulebook < Struct.new(:rules)
   def next_states(states, character)

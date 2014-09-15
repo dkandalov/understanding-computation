@@ -1,5 +1,5 @@
 require 'rspec'
-require File.expand_path('nfa.rb')
+require_relative 'nfa.rb'
 
 describe 'NFA' do
   it 'determine if in accepting state' do
