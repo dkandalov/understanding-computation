@@ -1,4 +1,6 @@
 require 'rspec'
+require 'polyglot'
+require 'treetop'
 require_relative 'regex.rb'
 
 describe 'Regex language' do
@@ -77,6 +79,16 @@ describe 'Regex language' do
     expect(pattern.matches?('a')).to be(true)
     expect(pattern.matches?('ab')).to be(true)
     expect(pattern.matches?('aba')).to be(true)
+    expect(pattern.matches?('abaab')).to be(true)
+    expect(pattern.matches?('abba')).to be(false)
+  end
+
+  it 'grammar parser' do
+    Treetop.load('regex')
+    parse_tree = PatternParser.new.parse('(a(|b))*')
+    expect(parse_tree).to_not be_nil
+
+    pattern = parse_tree.to_ast
     expect(pattern.matches?('abaab')).to be(true)
     expect(pattern.matches?('abba')).to be(false)
   end
