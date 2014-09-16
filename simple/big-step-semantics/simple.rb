@@ -1,4 +1,4 @@
-require File.expand_path('../small-step-semantics/simple')
+require_relative '../small-step-semantics/simple'
 
 class While
   def evaluate(environment)

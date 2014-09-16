@@ -1,5 +1,5 @@
-require File.expand_path('../small-step-semantics/simple.rb')
-require File.expand_path('../big-step-semantics/simple.rb')
+require_relative '../small-step-semantics/simple.rb'
+require_relative '../big-step-semantics/simple.rb'
 
 class While
   def to_ruby
