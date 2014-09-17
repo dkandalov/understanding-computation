@@ -1,3 +1,60 @@
+class DPDADesign < Struct.new(:start_state, :bottom_character, :accept_states, :rulebook)
+  def accepts?(string)
+    to_dpda.tap { |dpda| dpda.read_string(string) }.accepting?
+  end
+
+  def to_dpda
+    stack = Stack.new([bottom_character])
+    configuration = PDAConfiguration.new(start_state, stack)
+    DPDA.new(configuration, accept_states, rulebook)
+  end
+end
+
+class DPDA < Struct.new(:current_configuration, :accept_states, :rulebook)
+  def accepting?
+    accept_states.include?(current_configuration.state)
+  end
+
+  def read_character(character)
+    self.current_configuration = rulebook.next_configuration(current_configuration, character)
+  end
+
+  def read_string(string)
+    string.chars.each do |character|
+      read_character(character)
+    end
+    self
+  end
+
+  def current_configuration
+    rulebook.follow_free_moves(super)
+  end
+end
+
+class DPDARulebook < Struct.new(:rules)
+  def follow_free_moves(configuration)
+    if applies_to?(configuration, nil)
+      follow_free_moves(next_configuration(configuration, nil))
+    else
+      configuration
+    end
+  end
+
+  def next_configuration(configuration, character)
+    rule_for(configuration, character).follow(configuration)
+  end
+
+  private
+
+  def applies_to?(configuration, character)
+    not rule_for(configuration, character).nil?
+  end
+
+  def rule_for(configuration, character)
+    rules.detect { |rule| rule.applies_to?(configuration, character) }
+  end
+end
+
 class PDAConfiguration < Struct.new(:state, :stack)
 end
 
