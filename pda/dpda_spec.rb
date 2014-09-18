@@ -99,5 +99,23 @@ describe 'DPDA design' do
     expect(dpda.accepting?).to be(false)
     expect(dpda.stuck?).to be(true)
   end
+
+  it 'can recognize strings containing equal number of a and b' do
+    rules = [
+        PDARule.new(1, 'a', 2, '$', %w(a $)),
+        PDARule.new(1, 'b', 2, '$', %w(b $)),
+        PDARule.new(2, 'a', 2, 'a', %w(a a)),
+        PDARule.new(2, 'b', 2, 'b', %w(b b)),
+        PDARule.new(2, 'a', 2, 'b', []),
+        PDARule.new(2, 'b', 2, 'a', []),
+        PDARule.new(2, nil, 1, '$', ['$'])
+    ]
+    rulebook = DPDARulebook.new(rules)
+    dpda_design = DPDADesign.new(1, '$', [1], rulebook)
+
+    expect(dpda_design.accepts?('ababab')).to be(true)
+    expect(dpda_design.accepts?('bbbaaaab')).to be(true)
+    expect(dpda_design.accepts?('baa')).to be(false)
+  end
 end
 
