@@ -82,5 +82,22 @@ describe 'DPDA design' do
     expect(dpda_design.accepts?('()(())((()))(()(()))')).to be(true) # ()(())((()))(()(()))
     expect(dpda_design.accepts?('(()(()(()()(()()))()')).to be(false) # (()(()(()()(()()))()
   end
+
+  it 'can handle stuck state' do
+    rulebook = DPDARulebook.new([
+      PDARule.new(1, '(', 2, '$', %w(b $)),
+      PDARule.new(2, '(', 2, 'b', %w(b b)),
+      PDARule.new(2, ')', 2, 'b', []),
+      PDARule.new(2, nil, 1, '$', ['$'])
+    ])
+
+    dpda_design = DPDADesign.new(1, '$', [1], rulebook)
+    expect(dpda_design.accepts?('())')).to be(false)
+
+    dpda = dpda_design.to_dpda
+    dpda.read_string('())')
+    expect(dpda.accepting?).to be(false)
+    expect(dpda.stuck?).to be(true)
+  end
 end
 
