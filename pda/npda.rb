@@ -7,8 +7,15 @@ class NPDADesign < Struct.new(:start_state, :bottom_character, :accept_states, :
 
   def to_npda
     start_stack = Stack.new([bottom_character])
-    start_configuration = PDAConfiguration.new(start_state, start_stack)
-    NPDA.new(Set[start_configuration], accept_states, rulebook)
+    start_configurations = Set[PDAConfiguration.new(start_state, start_stack)]
+    @listener.on_state_change(start_configurations) unless @listener.nil?
+
+    NPDA.new(start_configurations, accept_states, rulebook).with_listener(@listener)
+  end
+
+  def with_listener(listener)
+    @listener = listener
+    self
   end
 end
 
@@ -17,19 +24,37 @@ class NPDA < Struct.new(:current_configurations, :accept_states, :rulebook)
     current_configurations.any? { |config| accept_states.include?(config.state) }
   end
 
-  def read_character(character)
-    self.current_configurations = rulebook.next_configurations(current_configurations, character)
-    self
-  end
-
   def read_string(string)
     string.chars.each do |character|
       read_character(character)
     end
+    self
+  end
+
+  def read_character(character)
+    self.current_configurations = rulebook.next_configurations(current_configurations, character)
+
+    @listener.on_character(character) unless @listener.nil?
+    @listener.on_state_change(self.current_configurations) unless @listener.nil?
+
+    self
   end
 
   def current_configurations
     rulebook.follow_free_moves(super)
+  end
+
+  def with_listener(listener)
+    @listener = listener
+    self
+  end
+end
+
+class NPDAListener
+  def on_character(character)
+  end
+
+  def on_state_change(configurations)
   end
 end
 

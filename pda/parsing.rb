@@ -1,3 +1,62 @@
+require_relative 'npda'
+
+def accepts_simple_code?(string)
+  def symbol_rule(pop, push)
+    PDARule.new(2, nil, 2, pop, push)
+  end
+
+  symbol_rules = [
+      # <statement> ::= <while> | <assign>
+      symbol_rule('S', %w(W)),
+      symbol_rule('S', %w(A)),
+
+      # <while> ::= 'w' '(' <expression> ')' '{' <statement> '}'
+      symbol_rule('W', %w(w \( E \) { S })),
+
+      # <assign> ::= 'v' '=' <expression>
+      symbol_rule('A', %w(v = E)),
+
+      # <expression> ::= <less-than>
+      symbol_rule('E', %w(L)),
+
+      # <less-than> ::= <multiply> '<' <less-than> | <multiply>
+      symbol_rule('L', %w(M < L)),
+      symbol_rule('L', %w(M)),
+
+      # <multiply> ::= <term> '*' <multiply> | <term>
+      symbol_rule('M', %w(T * M)),
+      symbol_rule('M', %w(T)),
+
+      # <term> ::= 'n' | 'v'
+      symbol_rule('T', %w(n)),
+      symbol_rule('T', %w(v))
+  ]
+
+  token_rules = LexicalAnalyzer::GRAMMAR.map do |rule|
+    PDARule.new(2, rule[:token], 2, rule[:token], [])
+  end
+
+  start_rule = PDARule.new(1, nil, 2, '$', %w(S $))
+  stop_rule = PDARule.new(2, nil, 3, '$', %w($))
+
+  rulebook = NPDARulebook.new([start_rule, stop_rule] + symbol_rules + token_rules)
+  npda_design = NPDADesign.new(1, '$', [3], rulebook).with_listener(PrintingListener.new)
+  token_string = LexicalAnalyzer.new(string).analyze.join
+  npda_design.accepts?(token_string)
+end
+
+class PrintingListener < NPDAListener
+  def on_character(character)
+    puts "character: '#{character}'"
+  end
+
+  def on_state_change(configurations)
+    puts 'configurations:'
+    puts configurations.to_a.join("\n")
+  end
+end
+
+
 class LexicalAnalyzer < Struct.new(:string)
   GRAMMAR = [
       { token: 'i', pattern: /if/ },
