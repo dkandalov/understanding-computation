@@ -59,6 +59,43 @@ describe 'DTM' do
     expect(dtm.accepting?).to be(false)
     expect(dtm.stuck?).to be(true)
   end
+
+  it 'recognizes strings with abc characters repeated N times' do
+    rules = [
+        TMRule.new(1, 'X', 1, 'X', :right),
+        TMRule.new(1, 'a', 2, 'X', :right),
+        TMRule.new(1, '_', 6, '_', :left),
+
+        TMRule.new(2, 'a', 2, 'a', :right),
+        TMRule.new(2, 'X', 2, 'X', :right),
+        TMRule.new(2, 'b', 3, 'X', :right),
+
+        TMRule.new(3, 'b', 3, 'b', :right),
+        TMRule.new(3, 'X', 3, 'X', :right),
+        TMRule.new(3, 'c', 4, 'X', :right),
+
+        TMRule.new(4, 'c', 4, 'c', :right),
+        TMRule.new(4, '_', 5, '_', :left),
+
+        TMRule.new(5, 'a', 5, 'a', :left),
+        TMRule.new(5, 'b', 5, 'b', :left),
+        TMRule.new(5, 'c', 5, 'c', :left),
+        TMRule.new(5, 'X', 5, 'X', :left),
+        TMRule.new(5, '_', 1, '_', :right)
+    ]
+    rulebook = DTMRulebook.new(rules)
+    tape = Tape.new([], 'a', %w(a a b b b c c c), '_')
+    dtm = DTM.new(TMConfiguration.new(1, tape), [6], rulebook)
+
+    10.times{ dtm.step }
+    expect(dtm.current_configuration.inspect).to eq('#<struct TMConfiguration state=5, tape=#<Tape XaaXbbXc(c)_>>')
+
+    25.times{ dtm.step }
+    expect(dtm.current_configuration.inspect).to eq('#<struct TMConfiguration state=5, tape=#<Tape _XXa(X)XbXXc_>>')
+
+    dtm.run
+    expect(dtm.current_configuration.inspect).to eq('#<struct TMConfiguration state=6, tape=#<Tape _XXXXXXXX(X)_>>')
+  end
 end
 
 

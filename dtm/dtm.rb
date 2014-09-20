@@ -4,6 +4,7 @@ class DTM < Struct.new(:current_configuration, :accept_states, :rulebook)
   end
 
   def step
+    raise("Can't step in stuck state") if stuck?
     self.current_configuration = rulebook.next_configuration(current_configuration)
   end
 
