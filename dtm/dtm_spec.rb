@@ -55,6 +55,9 @@ describe 'DTM' do
     tape = Tape.new(%w(1 2 1), '1', [], '_')
     dtm = DTM.new(TMConfiguration.new(1, tape), [3], rulebook)
     dtm.run
+
+    expect(dtm.accepting?).to be(false)
+    expect(dtm.stuck?).to be(true)
   end
 end
 
