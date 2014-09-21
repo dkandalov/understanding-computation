@@ -147,6 +147,21 @@ module FizzBuzz
       }}
     }]
 
+  # non-recursive version of MOD
+  # the idea is call method m times instead of using recursion
+  MOD_NR =
+    -> m { -> n {
+      m[-> x {
+        IF[IS_LESS_OR_EQUAL[n][x]][
+          SUBTRACT[x][n]
+        ][
+          x
+        ]
+      }][m]
+    }}
+  COUNTDOWN = -> p { PAIR[UNSHIFT[LEFT[p]][RIGHT[p]]][DECREMENT[RIGHT[p]]] }
+  RANGE_NR = -> m { -> n { LEFT[INCREMENT[SUBTRACT[n][m]][COUNTDOWN][PAIR[EMPTY][n]]] } }
+
 
   module LambdaToRuby
     def to_char(c)
@@ -248,6 +263,7 @@ module FizzBuzz
 
     it 'has ranges' do
       expect(to_int_array(RANGE[ONE][FIVE])).to eq([1, 2, 3, 4, 5])
+      expect(to_int_array(RANGE_NR[ONE][FIVE])).to eq([1, 2, 3, 4, 5])
     end
 
     it 'has lists' do
@@ -265,6 +281,9 @@ module FizzBuzz
     it 'has mod operator' do
       expect(to_integer(MOD[THREE][TWO])).to eq(1)
       expect(to_integer(MOD[POWER[THREE][THREE]][ADD[THREE][TWO]])).to eq(2)
+
+      expect(to_integer(MOD_NR[THREE][TWO])).to eq(1)
+      expect(to_integer(MOD_NR[POWER[THREE][THREE]][ADD[THREE][TWO]])).to eq(2)
     end
 
     it 'has less or equal operator' do
