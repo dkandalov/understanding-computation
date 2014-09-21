@@ -130,7 +130,25 @@ module FizzBuzz
     ][MOD[n][TEN]]}}]
 
 
-  describe 'FizzBuzz made from procs' do
+  ZEROS = Z[-> f { UNSHIFT[f][ZERO] }]
+  UPWARDS_OF = Z[-> f { -> n {
+        UNSHIFT[-> x { f[INCREMENT[n]][x] }][n]
+  }}]
+  MULTIPLES_OF =
+    -> m {
+      Z[-> f {
+        -> n { UNSHIFT[-> x { f[ADD[m][n]][x] }][n] }
+      }][m]
+    }
+  MULTIPLY_STREAMS =
+    Z[-> f {
+      -> k { -> l {
+        UNSHIFT[-> x { f[REST[k]][REST[l]][x] }][MULTIPLY[FIRST[k]][FIRST[l]]]
+      }}
+    }]
+
+
+  module LambdaToRuby
     def to_char(c)
       '0123456789BFiuz'.slice(to_integer(c))
     end
@@ -139,17 +157,18 @@ module FizzBuzz
       to_array(s).map { |c| to_char(c) }.join
     end
 
-    def to_array(proc)
+    def to_array(proc, count = nil)
       array = []
-      until to_boolean(IS_EMPTY[proc])
+      until to_boolean(IS_EMPTY[proc]) || count == 0
         array.push(FIRST[proc])
         proc = REST[proc]
+        count = count - 1 unless count.nil?
       end
       array
     end
 
-    def to_int_array(proc)
-      to_array(proc).map{ |it| to_integer(it) }
+    def to_int_array(proc, count = nil)
+      to_array(proc, count).map{ |it| to_integer(it) }
     end
 
     def to_boolean(proc)
@@ -159,7 +178,32 @@ module FizzBuzz
     def to_integer(proc)
       proc[-> n { n + 1 }][0]
     end
+  end
 
+  RSpec.configure do |config|
+    config.include LambdaToRuby
+  end
+
+
+  describe 'infinite streams' do
+    it '' do
+      expect(to_integer(FIRST[ZEROS])).to eq(0)
+      expect(to_integer(FIRST[REST[ZEROS]])).to eq(0)
+      expect(to_int_array(ZEROS, 5)).to eq([0, 0, 0, 0, 0])
+
+      expect(to_int_array(UPWARDS_OF[ZERO], 5)).to eq([0, 1, 2, 3, 4])
+      expect(to_int_array(MULTIPLES_OF[THREE], 5)).to eq([3, 6, 9, 12, 15])
+
+      expect(to_int_array(MAP[MULTIPLES_OF[THREE]][INCREMENT], 5)).to eq([4, 7, 10, 13, 16])
+      expect(to_int_array(MAP[MULTIPLES_OF[THREE]][MULTIPLY[TWO]], 5)).to eq([6, 12, 18, 24, 30])
+
+      expect(to_int_array(MULTIPLY_STREAMS[UPWARDS_OF[ONE]][MULTIPLES_OF[THREE]], 5))
+          .to eq([1*3, 2*6, 3*9, 4*12, 5*15])
+    end
+  end
+
+
+  describe 'FizzBuzz made from procs' do
     it 'solves FizzBuzz problem' do
       # using 1..20 range because TO_DIGITS is very slow
       solution =
