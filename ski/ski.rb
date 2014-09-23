@@ -1,4 +1,12 @@
 class SKISymbol < Struct.new(:name)
+  def as_a_function_of(name)
+    if self.name == name
+      I
+    else
+      SKICall.new(K, self)
+    end
+  end
+
   def reducible?
     false
   end
@@ -25,6 +33,12 @@ class SKISymbol < Struct.new(:name)
 end
 
 class SKICall < Struct.new(:left, :right)
+  def as_a_function_of(name)
+    left_function = left.as_a_function_of(name)
+    right_function = right.as_a_function_of(name)
+    SKICall.new(SKICall.new(S, left_function), right_function)
+  end
+
   def reducible?
     left.reducible? or right.reducible? or combinator.callable?(*arguments)
   end
@@ -32,7 +46,7 @@ class SKICall < Struct.new(:left, :right)
   def reduce
     if left.reducible?
       SKICall.new(left.reduce, right)
-    elsif
+    elsif right.reducible?
       SKICall.new(left, right.reduce)
     else
       combinator.call(*arguments)
@@ -57,6 +71,10 @@ class SKICall < Struct.new(:left, :right)
 end
 
 class SKICombinator < SKISymbol
+  def as_a_function_of(name)
+    SKICall.new(K, self)
+  end
+
   def callable?(*arguments)
     arguments.length == method(:call).arity
   end
@@ -77,4 +95,14 @@ end
 # reduce I[a]
 def I.call(a)
   a
+end
+
+def reduce(expression)
+  steps = []
+  while expression.reducible?
+    steps.push(expression)
+    expression = expression.reduce
+  end
+  steps.push(expression)
+  steps
 end
