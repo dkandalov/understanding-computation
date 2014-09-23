@@ -1,3 +1,5 @@
+require_relative '../ski/ski'
+
 def lc_reduce(expression)
   steps = []
   while expression.reducible?
@@ -9,6 +11,10 @@ def lc_reduce(expression)
 end
 
 class LCCall < Struct.new(:left, :right)
+  def to_ski
+    SKICall.new(left.to_ski, right.to_ski)
+  end
+
   def reduce
     if left.reducible?
       LCCall.new(left.reduce, right)
@@ -41,6 +47,10 @@ class LCCall < Struct.new(:left, :right)
 end
 
 class LCFunction < Struct.new(:parameter, :body)
+  def to_ski
+    body.to_ski.as_a_function_of(parameter)
+  end
+
   def call(argument)
     body.replace(parameter, argument)
   end
@@ -71,6 +81,10 @@ class LCFunction < Struct.new(:parameter, :body)
 end
 
 class LCVariable < Struct.new(:name)
+  def to_ski
+    SKISymbol.new(name)
+  end
+
   def replace(name, replacement)
     if self.name == name
       replacement

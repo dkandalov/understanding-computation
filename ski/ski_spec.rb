@@ -1,5 +1,8 @@
 require 'rspec'
+require 'polyglot'
+require 'treetop'
 require_relative 'ski'
+require_relative '../lambda/lambda'
 
 describe 'SKI' do
   it 'has AST' do
@@ -54,5 +57,25 @@ describe 'SKI' do
 
     expression = SKICall.new(function, y)
     expect(reduce(expression).last.to_s).to eq('S[y][I]')
+  end
+
+  it 'behaves like function calls in lambda calculus' do
+    Treetop.load('../lambda/grammar/lambda_calculus')
+    two = LambdaCalculusParser.new.parse('-> p { -> x { p[p[x]] } }').to_ast
+    expect(two.to_s).to eq('-> p { -> x { p[p[x]] } }')
+    expect(two.to_ski.to_s).to eq('S[S[K[S]][S[K[K]][I]]][S[S[K[S]][S[K[K]][I]]][K[I]]]')
+
+    inc, zero = SKISymbol.new(:inc), SKISymbol.new(:zero)
+    expression = SKICall.new(SKICall.new(two.to_ski, inc), zero)
+    expect(reduce(expression).last.to_s).to eq('inc[inc[zero]]')
+  end
+
+  it 'I combinator is redundant' do
+    x = SKISymbol.new(:x)
+    identity = SKICall.new(SKICall.new(S, K), K)
+    expression = SKICall.new(identity, x)
+
+    expect(expression.to_s).to eq('S[K][K][x]')
+    expect(reduce(expression).to_s).to eq('[S[K][K][x], K[x][K[x]], x]')
   end
 end

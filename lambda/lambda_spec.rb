@@ -6,9 +6,9 @@ describe 'Lambda calculus interpreter' do
     increment =
       LCFunction.new(:n, LCFunction.new(:p, LCFunction.new(:x,
         LCCall.new(LCVariable.new(:p),
-            LCCall.new(
-              LCCall.new(LCVariable.new(:n), LCVariable.new(:p)),
-              LCVariable.new(:x))
+          LCCall.new(
+            LCCall.new(LCVariable.new(:n), LCVariable.new(:p)),
+            LCVariable.new(:x))
         )
       )))
     expect(increment.to_s).to eq('-> n { -> p { -> x { p[n[p][x]] } } }')
