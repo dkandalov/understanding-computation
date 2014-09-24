@@ -1,4 +1,8 @@
 class SKISymbol < Struct.new(:name)
+  def to_iota
+    self
+  end
+
   def as_a_function_of(name)
     if self.name == name
       I
@@ -33,6 +37,10 @@ class SKISymbol < Struct.new(:name)
 end
 
 class SKICall < Struct.new(:left, :right)
+  def to_iota
+    SKICall.new(left.to_iota, right.to_iota)
+  end
+
   def as_a_function_of(name)
     left_function = left.as_a_function_of(name)
     right_function = right.as_a_function_of(name)
@@ -80,7 +88,7 @@ class SKICombinator < SKISymbol
   end
 end
 
-S, K, I = [:S, :K, :I].map { |name| SKICombinator.new(name) }
+S, K, I, IOTA = [:S, :K, :I, 'ι'].map { |name| SKICombinator.new(name) }
 
 # reduce S[a][b][c] to a[c][b[c]]
 def S.call(a, b, c)
@@ -96,6 +104,23 @@ end
 def I.call(a)
   a
 end
+
+def S.to_iota
+  SKICall.new(IOTA, SKICall.new(IOTA, SKICall.new(IOTA, SKICall.new(IOTA, IOTA))))
+end
+
+def K.to_iota
+  SKICall.new(IOTA, SKICall.new(IOTA, SKICall.new(IOTA, IOTA)))
+end
+
+def I.to_iota
+  SKICall.new(IOTA, IOTA)
+end
+
+def IOTA.call(a)
+  SKICall.new(SKICall.new(a, S), K)
+end
+
 
 def reduce(expression)
   steps = []

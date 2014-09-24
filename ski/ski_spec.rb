@@ -78,4 +78,38 @@ describe 'SKI' do
     expect(expression.to_s).to eq('S[K][K][x]')
     expect(reduce(expression).to_s).to eq('[S[K][K][x], K[x][K[x]], x]')
   end
+
+  it 'ι version of S' do
+    expression = S.to_iota
+    expect(reduce(expression).last.to_s).to eq('S')
+  end
+
+  it 'ι version of K' do
+    expression = K.to_iota
+    expect(reduce(expression).last.to_s).to eq('K')
+  end
+
+  it 'ι version of I' do
+    expression = I.to_iota
+    identity = reduce(expression).last
+    expect(identity.to_s).to eq('S[K][K[K]]')
+
+    x = SKISymbol.new(:x)
+    expression = SKICall.new(identity, x)
+    expect(reduce(expression).last.to_s).equal?('x')
+  end
+
+  it 'two in ι' do
+    Treetop.load('../lambda/grammar/lambda_calculus')
+    two = LambdaCalculusParser.new.parse('-> p { -> x { p[p[x]] } }').to_ast.to_ski.to_iota
+    expect(two.to_s).to eq('ι[ι[ι[ι[ι]]]][ι[ι[ι[ι[ι]]]][ι[ι[ι[ι]]][ι[ι[ι[ι[ι]]]]]]' +
+                              '[ι[ι[ι[ι[ι]]]][ι[ι[ι[ι]]][ι[ι[ι[ι]]]]][ι[ι]]]][ι[ι[ι[ι[ι]]]]' +
+                              '[ι[ι[ι[ι[ι]]]][ι[ι[ι[ι]]][ι[ι[ι[ι[ι]]]]]][ι[ι[ι[ι[ι]]]][ι[ι[ι[ι]]]' +
+                              '[ι[ι[ι[ι]]]]][ι[ι]]]][ι[ι[ι[ι]]][ι[ι]]]]')
+
+    inc, zero = SKISymbol.new(:inc), SKISymbol.new(:zero)
+    expression = SKICall.new(SKICall.new(two, inc), zero)
+
+    expect(reduce(expression).last.to_s).to eq('inc[inc[zero]]')
+  end
 end
